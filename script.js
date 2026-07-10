@@ -1,10 +1,10 @@
 (() => {
-  const ROUND_MS = 500;
+  const ROUND_MS = 1000;
   const WIN_SCORE = 10;
 
   const HAND_NAME = { 1: 'グー', 2: 'チョキ', 3: 'パー' };
   const HAND_EMOJI = { 1: '✊', 2: '✌️', 3: '🖐' };
-  const BASE_WEIGHTS = { 1: 0.36, 2: 0.32, 3: 0.32 };
+  const COUNTER_OF = { 1: 3, 2: 1, 3: 2 }; // その手に勝つ手
 
   // screens
   const screens = {
@@ -45,30 +45,58 @@
     return (a === 1 && b === 2) || (a === 2 && b === 3) || (a === 3 && b === 1);
   }
 
-  function weightedRandomHand() {
-    const r = Math.random();
-    if (r < BASE_WEIGHTS[1]) return 1;
-    if (r < BASE_WEIGHTS[1] + BASE_WEIGHTS[2]) return 2;
-    return 3;
+  function randomHand() {
+    return Math.floor(Math.random() * 3) + 1;
+  }
+
+  // プレイヤーの過去の手から次の一手を予測する。
+  // 「直前の結果 + 直前の自分の手」という文脈で次に何を出したかを数え、
+  // サンプルが少なければ「直前の自分の手」だけの文脈、それも無ければ全体の頻度に落とす。
+  function predictPlayerMove() {
+    const played = history.filter((h) => h.player !== null);
+    if (played.length === 0) return null;
+
+    const last = history[history.length - 1];
+
+    const byContext = { 1: 0, 2: 0, 3: 0 };
+    const byPrevMove = { 1: 0, 2: 0, 3: 0 };
+    const overall = { 1: 0, 2: 0, 3: 0 };
+
+    history.forEach((h, i) => {
+      if (h.player) overall[h.player] += 1;
+      if (i === 0 || !h.player) return;
+      const prev = history[i - 1];
+      if (prev.player === last.player && prev.result === last.result) {
+        byContext[h.player] += 1;
+      }
+      if (prev.player === last.player) {
+        byPrevMove[h.player] += 1;
+      }
+    });
+
+    const pickMax = (counts, minSamples) => {
+      const total = counts[1] + counts[2] + counts[3];
+      if (total < minSamples) return null;
+      let best = null;
+      let bestN = -1;
+      [1, 2, 3].forEach((k) => {
+        if (counts[k] > bestN) {
+          bestN = counts[k];
+          best = k;
+        }
+      });
+      return best;
+    };
+
+    return pickMax(byContext, 2) || pickMax(byPrevMove, 3) || pickMax(overall, 1);
   }
 
   function pickCpuMove() {
-    const last = history[history.length - 1];
-    if (last) {
-      const r = Math.random();
-      if (last.result === 'tie' && r < 0.55) {
-        return last.cpu; // クセ: あいこの後は同じ手を出しやすい
-      }
-      if (last.result === 'lose' && r < 0.45) {
-        // プレイヤーが負けた = CPUが勝った → 勝った手を続けやすい
-        return last.cpu;
-      }
-      if (last.result === 'win' && last.player && r < 0.4) {
-        // プレイヤーが勝った = CPUが負けた → 直前に負けた手をなぞりやすい
-        return last.player;
-      }
-    }
-    return weightedRandomHand();
+    // 2割はランダムに散らして、完全に読まれる/読み切る展開を避ける
+    if (Math.random() < 0.2) return randomHand();
+    const predicted = predictPlayerMove();
+    if (predicted) return COUNTER_OF[predicted];
+    return randomHand();
   }
 
   function resetGame() {
