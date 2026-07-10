@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>高速じゃんけん - Fast Janken</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== スタート画面 ===== -->
+  <section id="start-screen" class="screen active">
+    <h1 class="title">⚡ 高速じゃんけん</h1>
+    <p class="subtitle">0.5秒ごとにじゃんけん！先に10勝したら勝利。</p>
+
+    <div class="rules-card">
+      <h2>ルール</h2>
+      <ul>
+        <li><span class="key-badge">1</span> グー ✊　<span class="key-badge">2</span> チョキ ✌️　<span class="key-badge">3</span> パー 🖐</li>
+        <li>約0.5秒ごとに自動で手が判定されます</li>
+        <li>判定の瞬間までにキーを押していないと、その回は自動負けになります</li>
+        <li>先に10勝した方が試合に勝利</li>
+        <li>相手のクセを見抜くと有利になるかも…？</li>
+      </ul>
+    </div>
+
+    <button id="start-btn" class="btn btn-primary">ゲーム開始</button>
+  </section>
+
+  <!-- ===== ゲーム画面 ===== -->
+  <section id="game-screen" class="screen">
+    <div class="scoreboard">
+      <div class="score you">
+        <span class="score-label">YOU</span>
+        <span class="score-value" id="player-score">0</span>
+      </div>
+      <div class="vs">VS</div>
+      <div class="score cpu">
+        <span class="score-label">CPU</span>
+        <span class="score-value" id="cpu-score">0</span>
+      </div>
+    </div>
+
+    <div class="timer-track">
+      <div class="timer-bar" id="timer-bar"></div>
+    </div>
+
+    <div class="arena">
+      <div class="hand-display">
+        <div class="hand-label">YOU</div>
+        <div class="hand-emoji" id="player-hand">✊</div>
+      </div>
+      <div class="result-flash" id="result-flash"></div>
+      <div class="hand-display">
+        <div class="hand-label">CPU</div>
+        <div class="hand-emoji" id="cpu-hand">✊</div>
+      </div>
+    </div>
+
+    <div id="pending-indicator" class="pending-indicator">次の一手: <span id="pending-hand">未入力</span></div>
+
+    <div class="controls">
+      <button class="hand-btn" data-move="1"><span class="key-badge">1</span>✊ グー</button>
+      <button class="hand-btn" data-move="2"><span class="key-badge">2</span>✌️ チョキ</button>
+      <button class="hand-btn" data-move="3"><span class="key-badge">3</span>🖐 パー</button>
+    </div>
+
+    <div class="round-log" id="round-log"></div>
+  </section>
+
+  <!-- ===== リザルト画面 ===== -->
+  <section id="result-screen" class="screen">
+    <h1 class="title" id="result-title">試合終了</h1>
+    <div class="final-score" id="final-score">0 - 0</div>
+
+    <div class="analysis-grid">
+      <div class="analysis-card">
+        <h2>あなたの手の分布</h2>
+        <div class="bar-chart" id="player-hand-chart"></div>
+      </div>
+      <div class="analysis-card">
+        <h2>あいこの後に出しやすい手（あなた）</h2>
+        <div class="bar-chart" id="player-tie-chart"></div>
+      </div>
+      <div class="analysis-card">
+        <h2>CPUの手の分布</h2>
+        <div class="bar-chart" id="cpu-hand-chart"></div>
+      </div>
+      <div class="analysis-card">
+        <h2>あいこの後に出しやすい手（CPU）</h2>
+        <div class="bar-chart" id="cpu-tie-chart"></div>
+      </div>
+    </div>
+
+    <div class="stats-summary" id="stats-summary"></div>
+
+    <button id="retry-btn" class="btn btn-primary">もう一度</button>
+  </section>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>
